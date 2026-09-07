@@ -14,6 +14,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.helpers import device_registry as dr
 
 from .const import (
     AIMESH,
@@ -164,7 +165,13 @@ class AMBinarySensor(BinarySensorEntity):
                 model=self._node.native.model,
                 manufacturer=MANUFACTURER,
                 sw_version=self._node.native.fw,
-                via_device=(DOMAIN, self._router.mac),
+                via_device_id=(
+                    dr.async_get(self.hass)
+                    .async_get_device(
+                        identifiers={(DOMAIN, self._router.mac)}
+                    )
+                    .id
+                ),
             )
 
         return device_info
