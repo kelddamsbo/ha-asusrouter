@@ -110,17 +110,10 @@ class ARDeviceEntity(ScannerEntity):
     ) -> DeviceInfo:
         """Compile device info."""
 
-        parent = (
-            dr.async_get(self.hass)
-            .async_get_device(
-                identifiers={(DOMAIN, self._router.mac)}
-            )
-        )
-
         return DeviceInfo(
             connections={(dr.CONNECTION_NETWORK_MAC, mac_address)},
             name=name,
-            via_device_id=parent.id if parent else None,
+            via_device=(DOMAIN, self._router.mac),
         )
     
     @property
