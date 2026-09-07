@@ -169,10 +169,17 @@ class ClientInternetSwitch(SwitchEntity):
     def _compile_device_info(self) -> DeviceInfo:
         """Compile device info."""
 
+        parent = (
+            dr.async_get(self.hass)
+            .async_get_device(
+                identifiers={(DOMAIN, self._router.mac)}
+            )
+        )
+
         return DeviceInfo(
             connections={(dr.CONNECTION_NETWORK_MAC, self._mac)},
             name=self._rule.name,
-            via_device=(DOMAIN, self._router.mac),
+            via_device_id=parent.id if parent else None,
         )
 
     @property
