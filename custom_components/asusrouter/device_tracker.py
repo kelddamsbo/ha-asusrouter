@@ -112,7 +112,7 @@ class ARDeviceEntity(ScannerEntity):
 
         return DeviceInfo(
             connections={(dr.CONNECTION_NETWORK_MAC, mac_address)},
-            default_name=name,
+            name=name,
             via_device=(DOMAIN, self._router.mac),
         )
 
