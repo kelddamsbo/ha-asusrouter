@@ -24,6 +24,16 @@ from .router import ARDevice
 
 _LOGGER = logging.getLogger(__name__)
 
+def _get_parent_device_id(router: ARDevice) -> str | None:
+    """Return router device id."""
+
+    dev_reg = dr.async_get(router.hass)
+
+    parent = dev_reg.async_get_device(
+        identifiers={(DOMAIN, router.mac)}
+    )
+
+    return parent.id if parent else None
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -110,10 +120,13 @@ class ARDeviceEntity(ScannerEntity):
     ) -> DeviceInfo:
         """Compile device info."""
 
+        parent_device_id = _get_parent_device_id(self._router)
+        
         return DeviceInfo(
             connections={(dr.CONNECTION_NETWORK_MAC, mac_address)},
             name=name,
             via_device=(DOMAIN, self._router.mac),
+            via_device_id=parent_device_id,
         )
     
     @property
