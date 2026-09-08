@@ -14,6 +14,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.helpers import device_registry as dr
 
 from .const import (
     AIMESH,
@@ -30,6 +31,16 @@ from .entity import ARBinaryEntity, async_setup_ar_entry
 from .helpers import to_unique_id
 from .router import AiMeshNode, ARDevice
 
+def _get_parent_device_id(router: ARDevice) -> str | None:
+    """Return router device id."""
+
+    dev_reg = dr.async_get(router.hass)
+
+    parent = dev_reg.async_get_device(
+        identifiers={(DOMAIN, router.mac)}
+    )
+
+    return parent.id if parent else None
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -156,6 +167,10 @@ class AMBinarySensor(BinarySensorEntity):
             sw_version=self._node.native.fw,
         )
         if self._router.mac != self._node.mac:
+            parent_device_id = _get_parent_device_id(
+                self._router
+            )
+            
             device_info = DeviceInfo(
                 identifiers={
                     (DOMAIN, self._node.mac),
@@ -165,6 +180,7 @@ class AMBinarySensor(BinarySensorEntity):
                 manufacturer=MANUFACTURER,
                 sw_version=self._node.native.fw,
                 via_device=(DOMAIN, self._router.mac),
+                via_device_id=parent_device_id,
             )
         return device_info
 
