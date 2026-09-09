@@ -163,7 +163,7 @@ class AMBinarySensor(BinarySensorEntity):
                     for identifier in self._router.bridge.identifiers
                     if (
                         device_id := dr.async_get_device_id_by_identifier(
-                            self.hass,
+                            self._router.hass,
                             identifier,
                             config_entry_id=self._router._config_entry.entry_id,
                         )
