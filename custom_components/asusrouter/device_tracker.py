@@ -110,11 +110,31 @@ class ARDeviceEntity(ScannerEntity):
     ) -> DeviceInfo:
         """Compile device info."""
 
-        return DeviceInfo(
+        device_info: DeviceInfo = DeviceInfo(
             connections={(dr.CONNECTION_NETWORK_MAC, mac_address)},
             name=name,
-            via_device=(DOMAIN, self._router.mac),
         )
+
+        router_device_id = next(
+            (
+                device_id
+                for identifier in self._router.bridge.identifiers
+                if (
+                    device_id := dr.async_get_device_id_by_identifier(
+                        self.hass,
+                        identifier,
+                        config_entry_id=self._router._config_entry.entry_id,
+                    )
+                )
+                is not None
+            ),
+            None,
+        )
+
+        if router_device_id is not None:
+            device_info["via_device_id"] = router_device_id
+
+        return device_info
     
     @property
     def device_info(self) -> DeviceInfo:
