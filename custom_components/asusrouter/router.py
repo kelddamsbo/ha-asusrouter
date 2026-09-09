@@ -1017,6 +1017,11 @@ class ARDevice:
             )
 
     @property
+    def config_entry_id(self) -> str:
+        """Return config entry id."""
+        return self._config_entry.entry_id
+    
+    @property
     def device_info(self) -> DeviceInfo:
         """Device information."""
 
