@@ -10,6 +10,7 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -156,16 +157,23 @@ class AMBinarySensor(BinarySensorEntity):
             sw_version=self._node.native.fw,
         )
         if self._router.mac != self._node.mac:
-            device_info = DeviceInfo(
-                identifiers={
-                    (DOMAIN, self._node.mac),
-                },
-                name=self._node.native.model,
-                model=self._node.native.model,
-                manufacturer=MANUFACTURER,
-                sw_version=self._node.native.fw,
-                via_device=(DOMAIN, self._router.mac),
+            router_device_id = next(
+                (
+                    device_id
+                    for identifier in self._router.bridge.identifiers
+                    if (
+                        device_id := dr.async_get_device_id_by_identifier(
+                            self.hass,
+                            identifier,
+                            config_entry_id=self._router._config_entry.entry_id,
+                        )
+                    )
+                    is not None
+                ),
+                None,
             )
+            if router_device_id is not None:
+                device_info["via_device_id"] = router_device_id
         return device_info
 
     @callback
